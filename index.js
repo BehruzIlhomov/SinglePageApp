@@ -1,7 +1,7 @@
 const routes = {
     '/': '<h1>Home</h1><p>Welcome to the homepage!</p>',
-    '/about': '<h1>About</h1><p>About us page content goes here.</p>',
-    '/contact': '<h1>Contact</h1><p>Contact us through this page.</p>'
+    '/about': '/newPages/about.html',
+    '/contact': '/newPages/contact.html'
 };
 
 let lastRoute = '';
@@ -11,13 +11,28 @@ function logCurrentRoute(route) {
     lastRoute = route;
 }
 
+async function loadPageContent(path) {
+    const appDiv = document.getElementById('app');
+    
+    try {
+        const routeContent = routes[path];
+        appDiv.innerHTML = await (routeContent.endsWith('.html') 
+            ? fetch(routeContent).then(response => {
+                if (!response.ok) throw new Error('Page not found');
+                return response.text();
+            })
+            : routeContent
+        );
+    } catch (error) {
+        appDiv.innerHTML = '<h1>404 - Page Not Found</h1>';
+        console.error('Error loading page content:', error);
+    }
+}
+
 function router() {
     const path = window.location.hash.slice(1) || '/';
-    const appDiv = document.getElementById('app');
-
     logCurrentRoute(path);
-
-    appDiv.innerHTML = routes[path] || '<h1>404 - Page Not Found</h1>';
+    loadPageContent(path);
 }
 
 document.body.addEventListener('click', e => {
